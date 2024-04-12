@@ -23,14 +23,14 @@ ipython==7.34.0
 jedi==0.18.1
 joblib==1.1.0
 kiwisolver==1.4.2
-lietorch==0.2
+lietorch
 Markdown==3.4.1
 MarkupSafe==2.1.1
 matplotlib==3.4.3
 matplotlib-inline==0.1.6
 mmcv==1.6.1
 networkx==2.6.3
-numpy==1.16.1
+numpy==1.17.3
 oauthlib==3.2.1
 opencv-python==4.6.0.66
 opencv-python-headless==4.6.0.66
@@ -73,8 +73,6 @@ tensorboardX==2.5
 threadpoolctl==3.1.0
 tifffile==2021.11.2
 timm==0.6.7
-torch @ file:///home/Process3/KITTI_depth/venv_2/torch-1.8.1%2Bcu111-cp37-cp37m-linux_x86_64.whl
-torchvision @ file:///home/Process3/KITTI_depth/venv_2/torchvision-0.9.1%2Bcu111-cp37-cp37m-linux_x86_64.whl
 tqdm==4.64.0
 traitlets==5.4.0
 typing-extensions==4.2.0
