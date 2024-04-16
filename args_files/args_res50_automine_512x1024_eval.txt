@@ -1,0 +1,16 @@
+--data_path /media/root123/ac522/AutoMine/
+--dataset automine_depth
+--eval_split eigen
+--height 512
+--width 1024
+--batch_size 8
+--model_dim 32
+--patch_size 20
+--dim_out 128
+--query_nums 128
+--min_depth 0.1
+--max_depth 100.0
+--eval_mono
+--load_best_weights_folder logs/SQLdepth_resnet50_ft/best_weights
+--save_pred_depths
+--save_pred_metrics
