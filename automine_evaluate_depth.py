@@ -59,6 +59,7 @@ def colorize(value: np.ndarray, vmin: float = None, vmax: float = None, cmap: st
     vmin = value.min() if vmin is None else vmin
     vmax = value.max() if vmax is None else vmax
     value = (value - vmin) / (vmax - vmin)  # vmin..vmax
+
     # set color
     cmapper = matplotlib.cm.get_cmap(cmap)
     value = cmapper(value, bytes=True)  # (nxmx4)
@@ -81,7 +82,7 @@ def evaluate(opt):
     """Evaluates a pretrained model using a specified test set
     """
     MIN_DEPTH = 1e-3
-    MAX_DEPTH = 20
+    MAX_DEPTH = 80
 
     splits_dir = os.path.join(opt.data_path, "AutoMine_Depth")
     filenames = readlines(os.path.join(splits_dir, "AutoMine_Depth_val.txt"))
@@ -208,7 +209,8 @@ def evaluate(opt):
 
         pred_disp = pred_disps[i]
         pred_disp = cv2.resize(pred_disp, (gt_width, gt_height))
-        pred_depth = 1 / pred_disp
+        pred_depth = pred_disp
+
         pred_depth_color = pred_depth.copy()
 
         mask = gt_depth > 0
@@ -224,7 +226,7 @@ def evaluate(opt):
                 pred_depth_color *= ratio
                 pred_depth_color[pred_depth_color < MIN_DEPTH] = MIN_DEPTH
                 pred_depth_color[pred_depth_color > MAX_DEPTH] = MAX_DEPTH
-                color_depth_map = Image.fromarray(colorize(pred_depth_color, MIN_DEPTH, MAX_DEPTH), mode='RGB')
+                color_depth_map = Image.fromarray(colorize(pred_depth_color), mode='RGB')
                 color_depth_map.save(os.path.join(save_depths_dir, "{}.png".format(frame_id_str)))
 
         pred_depth[pred_depth < MIN_DEPTH] = MIN_DEPTH
