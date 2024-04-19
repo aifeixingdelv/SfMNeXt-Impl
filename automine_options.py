@@ -262,8 +262,14 @@ class MonodepthOptions:
                                  type=str,
                                  help="normal or shared",
                               #    default="separate_resnet",
-                                 default="posecnn",
+                                 default="separate_resnet",
                                  choices=["posecnn", "pose_flow", "separate_resnet", "shared"])
+        self.parser.add_argument("--posenet_num_layers",
+                                 type=int,
+                                 help="number of resnet layers",
+                                 default=18,
+                                 choices=[18, 34, 50, 101, 152])
+
 
         # SYSTEM options
         self.parser.add_argument("--no_cuda",

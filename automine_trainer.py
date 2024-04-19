@@ -94,23 +94,49 @@ class Trainer:
         # self.models["depth"].to(self.device)
         self.parameters_to_train += list(self.models["depth"].parameters())
 
+        ## 高强：Pose网络修改
+        if self.opt.pose_model_type == "separate_resnet":
+            self.models["pose_encoder"] = networks.ResnetEncoder(
+                self.opt.posenet_num_layers,
+                self.opt.weights_init == "pretrained",
+                num_input_images=self.num_pose_frames)
 
-        self.models["pose"] = networks.PoseCNN(
-            self.num_input_frames if self.opt.pose_model_input == "all" else 2) # default=2
-        if self.opt.pretrained_pose :
-            pose_net_path = os.path.join(self.opt.pose_net_path, 'pose.pth')
-            state_dict = OrderedDict([
-                (k.replace("module.", ""), v) for (k, v) in torch.load(pose_net_path).items()])
-            self.models["pose"].load_state_dict(state_dict)
+            self.models["pose"] = networks.PoseDecoder(
+                self.models["pose_encoder"].num_ch_enc,
+                num_input_features=1,
+                num_frames_to_predict_for=2)
+
+        elif self.opt.pose_model_type == "shared":
+            self.models["pose"] = networks.PoseDecoder(
+                self.models["encoder"].num_ch_enc, self.num_pose_frames)
+
+        elif self.opt.pose_model_type == "posecnn":
+            self.models["pose"] = networks.PoseCNN(
+                self.num_input_frames if self.opt.pose_model_input == "all" else 2)
+
+        self.models["pose_encoder"].to(self.device)
+        self.models["pose"].to(self.device)
+        self.models["pose_encoder"] = torch.nn.DataParallel(self.models["pose_encoder"])
+        self.models["pose"] = torch.nn.DataParallel(self.models["pose"])
+
+        # self.models["pose"] = networks.PoseCNN(
+        #     self.num_input_frames if self.opt.pose_model_input == "all" else 2) # default=2
+        # if self.opt.pretrained_pose :
+        #     pose_net_path = os.path.join(self.opt.pose_net_path, 'pose.pth')
+        #     state_dict = OrderedDict([
+        #         (k.replace("module.", ""), v) for (k, v) in torch.load(pose_net_path).items()])
+        #     self.models["pose"].load_state_dict(state_dict)
 
         # self.models["pose"].to(self.device)
-        self.models["pose"] = self.models["pose"].cuda()
+        # self.models["pose"] = self.models["pose"].cuda()
         # self.models["pose"] = torch.nn.DataParallel(self.models["pose"])
         if self.opt.diff_lr :
             print("using diff lr for depth-net and pose-net")
             self.pose_params = []
+            self.pose_params += list(self.models["pose_encoder"].parameters())
             self.pose_params += list(self.models["pose"].parameters())
         else :
+            self.parameters_to_train += list(self.models["pose_encoder"].parameters())
             self.parameters_to_train += list(self.models["pose"].parameters())
 
         # if self.opt.predictive_mask:
