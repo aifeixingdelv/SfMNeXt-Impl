@@ -11,8 +11,8 @@ class Depth_Decoder_QueryTr(nn.Module):
         self.embedding_convPxP = nn.Conv2d(in_channels, embedding_dim,
                                            kernel_size=patch_size, stride=patch_size, padding=0)
         self.positional_encodings = nn.Parameter(torch.rand(500, embedding_dim), requires_grad=True)
-        encoder_layers = nn.modules.transformer.TransformerEncoderLayer(embedding_dim, num_heads, dim_feedforward=1024)
-        # encoder_layers = nn.modules.transformer.TransformerEncoderLayer(embedding_dim, num_heads, dim_feedforward=512)
+        # encoder_layers = nn.modules.transformer.TransformerEncoderLayer(embedding_dim, num_heads, dim_feedforward=1024)
+        encoder_layers = nn.modules.transformer.TransformerEncoderLayer(embedding_dim, num_heads, dim_feedforward=512)
         self.transformer_encoder = nn.modules.transformer.TransformerEncoder(encoder_layers, num_layers=4)
         self.conv3x3 = nn.Conv2d(in_channels, embedding_dim, kernel_size=3, stride=1, padding=1)
 

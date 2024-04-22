@@ -1,4 +1,4 @@
---model_name SQLdepth_backbone(res50)_posenet(res18)_ft
+--model_name SQLdepth_backbone(res18)_posenet(res18)_ft
 --data_path /home/shantui/1_workspace/datasets/
 --dataset automine_depth
 --eval_split eigen
@@ -12,5 +12,4 @@
 --query_nums 128
 --min_depth 0.1
 --max_depth 100.0
---load_pretrained_model
---load_pt_folder models/KITTI_320x1024_models
+--backbone resnet18_lite

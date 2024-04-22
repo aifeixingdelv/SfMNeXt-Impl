@@ -39,7 +39,7 @@ class Trainer:
         self.models = {}
         self.parameters_to_train = []
 
-        self.device = torch.device("cpu" if self.opt.no_cuda else "cuda")
+        self.device = torch.device("cpu" if self.opt.no_cuda else "cuda:1")
 
         self.num_scales = len(self.opt.scales) # default=[0], we only perform single scale training
         self.num_input_frames = len(self.opt.frame_ids) # default=[0, -1, 1]
@@ -70,9 +70,9 @@ class Trainer:
             filtered_dict_enc = {k: v for k, v in loaded_dict_enc.items() if k in self.models["encoder"].state_dict()}
             self.models["encoder"].load_state_dict(filtered_dict_enc)
 
-        self.models["encoder"] = self.models["encoder"].cuda()
-        self.models["encoder"] = torch.nn.DataParallel(self.models["encoder"]) 
-        # self.models["encoder"].to(self.device)
+        # self.models["encoder"] = self.models["encoder"].cuda()
+        # self.models["encoder"] = torch.nn.DataParallel(self.models["encoder"])
+        self.models["encoder"].to(self.device)
         self.parameters_to_train += list(self.models["encoder"].parameters())
 
         if self.opt.backbone.endswith("_lite"):
@@ -89,8 +89,8 @@ class Trainer:
             filtered_dict_enc = {k: v for k, v in loaded_dict_enc.items() if k in self.models["depth"].state_dict()}
             self.models["depth"].load_state_dict(filtered_dict_enc)
 
-        self.models["depth"] = self.models["depth"].cuda()
-        self.models["depth"] = torch.nn.DataParallel(self.models["depth"])
+        self.models["depth"].to(self.device)
+        # self.models["depth"] = torch.nn.DataParallel(self.models["depth"])
         # self.models["depth"].to(self.device)
         self.parameters_to_train += list(self.models["depth"].parameters())
 
@@ -116,8 +116,8 @@ class Trainer:
 
         self.models["pose_encoder"].to(self.device)
         self.models["pose"].to(self.device)
-        self.models["pose_encoder"] = torch.nn.DataParallel(self.models["pose_encoder"])
-        self.models["pose"] = torch.nn.DataParallel(self.models["pose"])
+        # self.models["pose_encoder"] = torch.nn.DataParallel(self.models["pose_encoder"])
+        # self.models["pose"] = torch.nn.DataParallel(self.models["pose"])
 
         # self.models["pose"] = networks.PoseCNN(
         #     self.num_input_frames if self.opt.pose_model_input == "all" else 2) # default=2
@@ -553,7 +553,7 @@ class Trainer:
                 reprojection_losses *= mask
 
                 # add a loss pushing mask to 1 (using nn.BCELoss for stability)
-                weighting_loss = 0.2 * nn.BCELoss()(mask, torch.ones(mask.shape).cuda())
+                weighting_loss = 0.2 * nn.BCELoss()(mask, torch.ones(mask.shape).to(self.device))
                 loss += weighting_loss.mean()
 
             if self.opt.avg_reprojection:
@@ -564,7 +564,7 @@ class Trainer:
             if not self.opt.disable_automasking:
                 # add random numbers to break ties
                 identity_reprojection_loss += torch.randn(
-                    identity_reprojection_loss.shape).cuda() * 0.00001
+                    identity_reprojection_loss.shape).to(self.device) * 0.00001
 
                 combined = torch.cat((identity_reprojection_loss, reprojection_loss), dim=1)
             else:
@@ -698,7 +698,8 @@ class Trainer:
             if model_name == 'pose':
                to_save = model.state_dict()
             else:
-                to_save = model.module.state_dict()
+                to_save = model.state_dict()
+                # to_save = model.module.state_dict()
             if model_name == 'encoder':
                 # save the sizes - these are needed at prediction time
                 to_save['height'] = self.opt.height
